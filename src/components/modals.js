@@ -1,16 +1,19 @@
 import { hideInputError } from "./validation";
 
-function openModal(modal) {
-  modal.classList.add("popup_is-opened");
-  document.addEventListener("keydown", handelCloseModal);
-
+function resetInputErrors(modal) {
   const form = modal.querySelector(".popup__form");
   if (form) {
     const inputs = form.querySelectorAll(".popup__input");
     inputs.forEach((input) => {
-      hideInputError(form, input)
-    })
+      hideInputError(form, input);
+    });
   }
+}
+
+function openModal(modal) {
+  modal.classList.add("popup_is-opened");
+  document.addEventListener("keydown", handleCloseModal);
+  resetInputErrors(modal)
 }
 
 function openImageModal(card, modal) {
@@ -28,10 +31,10 @@ function openImageModal(card, modal) {
 
 function closeModal(modal) {
   modal.classList.remove("popup_is-opened");
-  document.removeEventListener("keydown", handelCloseModal);
+  document.removeEventListener("keydown", handleCloseModal);
 }
 
-function handelCloseModal(evt) {
+function handleCloseModal(evt, modal) {
   if (evt.key === "Escape") {
     const activeModal = document.querySelector(".popup_is-opened");
     if (!activeModal) return;

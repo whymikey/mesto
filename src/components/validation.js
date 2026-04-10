@@ -24,11 +24,6 @@ const isValid = (form, input) => {
   }
 };
 
-const resetForm = (form) => {
-  const inputs = form.querySelectorAll(".popup__input");
-  inputs.forEach((input) => hideInputError(form, input))
-};
-
 const setEventListenersOnInput = (form) => {
   const inputs = form.querySelectorAll(".popup__input");
   inputs.forEach((input) => {

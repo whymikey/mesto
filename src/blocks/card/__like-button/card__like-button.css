@@ -1,3 +1,16 @@
+.card__footer {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: end;
+  gap: 2px;
+}
+
+.card__like-count {
+  padding: 0;
+  margin: 0;
+}
+
 .card__like-button {
   width: 21px;
   height: 18px;

@@ -1,34 +1,34 @@
-const createCard = (template, { name, link }) => {
-  const cloneCard = template.content.cloneNode(true);
-  cloneCard.querySelector(".card__image").src = link;
-  cloneCard.querySelector(".card__title").textContent = name;
+const createCard = ({ name, link, likes, _id, owner }, userId, template) => {
+  const clone = template.content.cloneNode(true);
+  const cardElement = clone.querySelector(".card");
+  cardElement.querySelector(".card__image").src = link;
+  cardElement.querySelector(".card__title").textContent = name;
+  cardElement.querySelector(".card__like-count").textContent = likes.length;
+  cardElement.dataset.cardId = _id;
+  const deleteBtn = cardElement.querySelector(".card__delete-button");
+  if (owner._id !== userId) deleteBtn.remove();
+  return cardElement;
+};
 
-  return cloneCard;
+const renderCards = (template, cards, container, userId) => {
+  cards.forEach((cardData) => {
+    const card = createCard(cardData, userId, template);
+    container.prepend(card);
+  });
+};
+
+const addCard = (cardData, userId, template, container) => {
+  const card = createCard(cardData, userId, template);
+  container.prepend(card);
+};
+
+const likeCard = (card) => {
+  const btn = card.querySelector(".card__like-button");
+  btn.classList.toggle("card__like-button_is-active");
 };
 
 const removeCard = (card) => {
   card.remove();
-};
-
-const renderCards = (template, cards, cardsList) => {
-  cards.forEach((card) => {
-    const cardElement = createCard(template, card);
-    cardsList.prepend(cardElement);
-  });
-};
-
-const addCard = (template, modal, cardsList) => {
-  const newCard = {
-    name: modal.querySelector(".popup__input_type_card-name").value,
-    link: modal.querySelector(".popup__input_type_url").value,
-  };
-  const cardElement = createCard(template, newCard);
-  cardsList.prepend(cardElement);
-};
-
-const likeCard = (card) => {
-  const btn = card.querySelector('.card__like-button')
-  btn.classList.toggle('card__like-button_is-active')
 };
 
 export { renderCards, removeCard, addCard, likeCard };

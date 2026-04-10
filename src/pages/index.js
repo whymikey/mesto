@@ -1,82 +1,158 @@
-import { initialCards } from "../components/initialCards.js";
-import {
-  renderCards,
-  removeCard,
-  addCard,
-  likeCard,
-} from "../components/cards.js";
+import { addCard, likeCard, renderCards } from "../components/cards.js";
 import { openModal, closeModal, openImageModal } from "../components/modals.js";
-import { getProfileData, updateProfileData } from "../components/profile.js";
+import {
+  getProfileDataFromForm,
+  renderUserProfile,
+} from "../components/profile.js";
 import { setEventListenersOnInput } from "../components/validation.js";
+import {
+  fetchInitialData,
+  updateProfileOnServer,
+  updateCardsOnServer,
+  toggleLike,
+  removeCard,
+  changeAvatar,
+} from "../components/api.js";
 
 const template = document.getElementById("card-template");
 const cardsList = document.querySelector(".places__list");
 const profileEditButton = document.querySelector(".profile__edit-button");
 const profileAddButton = document.querySelector(".profile__add-button");
+const profileAvatar = document.querySelector(".profile__image");
 const editModal = document.querySelector(".popup_type_edit");
 const addNewCardModal = document.querySelector(".popup_type_new-card");
 const scaleCardModal = document.querySelector(".popup_type_image");
+const changeAvatarModal = document.querySelector(".popup_type_avatar");
 const fromEditProfile = document.querySelector('[name="edit-profile"]');
 const fromAddCard = document.querySelector('[name="new-place"]');
+const formEditAvatar = document.querySelector('[name="edit-avatar"]');
+const apiKey = import.meta.env.VITE_API_KEY;
 
-cardsList.addEventListener("click", (evt) => {
-  if (evt.target.classList.contains("card__delete-button")) {
-    const currentCard = evt.target.closest(".card");
-    removeCard(currentCard);
-  }
-});
+let currentUserData;
 
-cardsList.addEventListener("click", (evt) => {
-  if (evt.target.classList.contains("card__like-button")) {
-    const currentCard = evt.target.closest(".card");
-    likeCard(currentCard);
-  }
-});
+// Заполнение полей редактирования профиля
 
-cardsList.addEventListener("click", (evt) => {
-  if (evt.target.classList.contains("card__image")) {
-    const currentCard = evt.target.closest(".card");
-    openImageModal(currentCard, scaleCardModal);
-  }
-});
-
-profileEditButton.addEventListener("click", () => {
-  const profile = getProfileData();
-  editModal.querySelector(".popup__input_type_name").value = profile.name;
+function fillEditProfileModal(userData) {
+  editModal.querySelector(".popup__input_type_name").value = userData.name;
   editModal.querySelector(".popup__input_type_description").value =
-    profile.description;
+    userData.about;
 
   openModal(editModal);
+}
+
+// получаение и отрисовка данных с сервера
+
+async function initializeAppUI(template, container) {
+  const [userData, cardData] = await fetchInitialData(apiKey);
+  currentUserData = userData;
+  renderUserProfile(userData);
+  renderCards(template, cardData, container, userData._id);
+}
+
+// делигирование собитий на карточках
+
+cardsList.addEventListener("click", (evt) => {
+  const card = evt.target.closest(".card");
+  if (evt.target.classList.contains("card__delete-button")) {
+    removeCard(apiKey, card.dataset.cardId).then(() => {
+      card.remove();
+    });
+  } else if (evt.target.classList.contains("card__like-button")) {
+    toggleLike(card, evt.target, apiKey);
+  } else if (evt.target.classList.contains("card__image")) {
+    openImageModal(card, scaleCardModal);
+  }
 });
+
+// Заполнение полей редактирования профиля
+
+profileEditButton.addEventListener("click", () =>
+  fillEditProfileModal(currentUserData),
+);
+
+// Открытие модалки
 
 profileAddButton.addEventListener("click", () => {
   openModal(addNewCardModal);
 });
 
+profileAvatar.addEventListener("click", () => {
+  openModal(changeAvatarModal);
+});
+
+// закрытие модалок
+
 document.addEventListener("click", (evt) => {
   const popup = evt.target.closest(".popup");
 
-  if (evt.target.classList.contains("popup__close")) {
+  if (
+    evt.target.classList.contains("popup__close") ||
+    evt.target.classList.contains("popup")
+  ) {
     closeModal(popup);
   }
+});
 
-  if (evt.target.classList.contains("popup")) {
-    closeModal(popup);
+// Отправка новых данных пользователя
+
+fromEditProfile.addEventListener("submit", async (evt) => {
+  evt.preventDefault();
+  const updateData = getProfileDataFromForm(fromEditProfile);
+  try {
+    const serverData = await updateProfileOnServer(apiKey, updateData);
+    closeModal(editModal);
+    renderUserProfile(serverData);
+    currentUserData = serverData;
+  } catch (err) {
+    console.log(err);
   }
 });
 
-fromEditProfile.addEventListener("submit", (evt) => {
+formEditAvatar.addEventListener("submit", async (evt) => {
   evt.preventDefault();
-  updateProfileData(editModal);
-  closeModal(editModal);
+  const avatarInput = formEditAvatar.querySelector(".popup__input_type_avatar");
+  const submitButton = formEditAvatar.querySelector(".popup__button");
+
+  submitButton.textContent = "Сохранение...";
+
+  try {
+    const serverData = await changeAvatar(apiKey, {
+      avatar: avatarInput.value,
+    });
+
+    renderUserProfile(serverData);
+    currentUserData = serverData;
+    closeModal(changeAvatarModal);
+    avatarInput.value = "";
+  } catch (err) {
+    console.log(err);
+  }
 });
 
-fromAddCard.addEventListener("submit", (evt) => {
+// Добавление новых карточек
+
+fromAddCard.addEventListener("submit", async (evt) => {
   evt.preventDefault();
-  addCard(template, addNewCardModal, cardsList);
-  closeModal(addNewCardModal);
+  fromAddCard.querySelector(".popup__button").textContent = "Сохранение...";
+  const newCardData = {
+    name: addNewCardModal.querySelector(".popup__input_type_card-name").value,
+    link: addNewCardModal.querySelector(".popup__input_type_url").value,
+  };
+  try {
+    const serverData = await updateCardsOnServer(apiKey, newCardData);
+    addCard(serverData, currentUserData._id, template, cardsList);
+    closeModal(addNewCardModal);
+    addNewCardModal.querySelector(".popup__input_type_card-name").value = "";
+    addNewCardModal.querySelector(".popup__input_type_url").value = "";
+  } catch (err) {
+    console.log(err);
+  } finally {
+    fromAddCard.querySelector(".popup__button").textContent = "Сохранить";
+  }
 });
 
-setEventListenersOnInput(fromEditProfile)
-setEventListenersOnInput(fromAddCard)
-renderCards(template, initialCards, cardsList);
+setEventListenersOnInput(formEditAvatar);
+setEventListenersOnInput(fromEditProfile);
+setEventListenersOnInput(fromAddCard);
+
+initializeAppUI(template, cardsList);

@@ -1,17 +1,16 @@
-const getProfileData = () => ({
-  name: document.querySelector(".profile__title").textContent,
-  description: document.querySelector(".profile__description").textContent,
+
+const getProfileDataFromForm = (form) => ({
+  name: form.querySelector(".popup__input_type_name").value,
+  about: form.querySelector(".popup__input_type_description").value,
 });
 
-const updateProfileData = (modal) => {
-  const nameInputValue = modal.querySelector(".popup__input_type_name").value;
-  const descriptionInputValue = modal.querySelector(
-    ".popup__input_type_description",
-  ).value;
-
-  document.querySelector(".profile__title").textContent = nameInputValue;
-  document.querySelector(".profile__description").textContent =
-    descriptionInputValue;
+const renderUserProfile = ({ name, about, avatar }) => {
+  document.querySelector(".profile__title").textContent = name;
+  document.querySelector(".profile__description").textContent = about;
+  if (avatar) {
+    document.querySelector(".profile__image").style.backgroundImage =
+      `url(${avatar})`;
+  }
 };
 
-export { getProfileData, updateProfileData };
+export { getProfileDataFromForm, renderUserProfile };
