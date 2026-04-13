@@ -34,7 +34,7 @@ Users can:
 
 ## 🌐 Live Demo
 
-https://mesto-b4gtfsdia-mikushaloves-6941s-projects.vercel.app/
+https://mesto-lemon.vercel.app/
 
 ## 🛠 Tech Stack
 
