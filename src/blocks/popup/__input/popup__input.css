@@ -22,7 +22,8 @@
   display: none;
 }
 
-.name-input-error_active {
+.name-input-error_active,
+.popup__error_active {
   display: block;
   color: red;
   font-size: 12px;

@@ -1,4 +1,3 @@
-
 const getProfileDataFromForm = (form) => ({
   name: form.querySelector(".popup__input_type_name").value,
   about: form.querySelector(".popup__input_type_description").value,
