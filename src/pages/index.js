@@ -23,10 +23,12 @@ const api = new Api({
 const cardsList = document.querySelector(".places__list");
 const editProfileButton = document.querySelector(".profile__edit-button");
 const addCardButton = document.querySelector(".profile__add-button");
+const avatarChange = document.querySelector(".profile__image");
 
 const editModal = new Modal(".popup_type_edit");
 const addModal = new Modal(".popup_type_new-card");
 const imageModal = new Modal(".popup_type_image");
+const avatarModal = new Modal(".popup_type_avatar");
 
 const editForm = document.querySelector('[name="edit-profile"]');
 const addForm = document.querySelector('[name="new-place"]');
@@ -73,6 +75,12 @@ function openAddModal() {
   addModal.open();
 }
 
+function openAvatarModal() {
+  avatarForm.reset();
+  avatarValidator.resetValidation();
+  avatarModal.open();
+}
+
 function handleEditSubmit(evt) {
   evt.preventDefault();
 
@@ -106,19 +114,34 @@ function handleAddSubmit(evt) {
     .catch(console.error);
 }
 
+function handleAvatarSubmit(evt) {
+  evt.preventDefault();
+
+  const avatar = avatarForm.querySelector(".popup__input_type_avatar").value;
+
+  api.updateAvatar({ avatar }).then((data) => {
+    currentUserData = data;
+    renderUserProfile(data);
+    avatarModal.close();
+  });
+}
+
 editValidator.enableValidation();
 addValidator.enableValidation();
 avatarValidator.enableValidation();
 
 editProfileButton.addEventListener("click", openEditModal);
 addCardButton.addEventListener("click", openAddModal);
+avatarChange.addEventListener("click", openAvatarModal);
 
 editForm.addEventListener("submit", handleEditSubmit);
 addForm.addEventListener("submit", handleAddSubmit);
+avatarForm.addEventListener("submit", handleAvatarSubmit);
 
 editModal.setEventListeners();
 addModal.setEventListeners();
 imageModal.setEventListeners();
+avatarModal.setEventListeners();
 
 renderUserProfile(currentUserData);
 cardsList.append(...cards.map(createCard));
