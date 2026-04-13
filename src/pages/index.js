@@ -1,5 +1,5 @@
 import Api from "../Fetch/api.js";
-import Card from "../components/Cards.js";
+import Card from "../components/cards.js";
 import { renderUserProfile } from "../components/UserInfo.js";
 import Modal from "../components/modals.js";
 import FormValidation from "../components/FormValidation.js";
